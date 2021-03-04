@@ -25,7 +25,7 @@
                 print_r(json_encode(
                     array(
                         'success'=>false,
-                        'message' => $e->getMessage(),
+                        'message' => "Data base error : " . $e->getMessage(),
                     )
                 ));
                 exit();

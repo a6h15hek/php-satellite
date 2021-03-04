@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+- phpMyAdmin XML Dump
+- version 5.0.4
+- https://www.phpmyadmin.net
+-
+- Host: localhost
+- Generation Time: Mar 04, 2021 at 12:46 PM
+- Server version: 8.0.23
+- PHP Version: 8.0.2
+-->
+
+<pma_xml_export version="1.0" xmlns:pma="https://www.phpmyadmin.net/some_doc_url/">
+    <!--
+    - Structure schemas
+    -->
+    <pma:structure_schemas>
+        <pma:database name="satellite_db" collation="utf8mb4_0900_ai_ci" charset="utf8mb4">
+            <pma:table name="client">
+                CREATE TABLE `client` (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `app_name` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                  `client_id` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                  `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                  PRIMARY KEY (`id`)
+                ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+            </pma:table>
+            <pma:table name="collections">
+                CREATE TABLE `collections` (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `collection_name` varchar(20) NOT NULL,
+                  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`id`),
+                  UNIQUE KEY `collection_name` (`collection_name`)
+                ) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+            </pma:table>
+            <pma:table name="documents">
+                CREATE TABLE `documents` (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `collection_id` int NOT NULL,
+                  `document_name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                  `data_object` json DEFAULT NULL,
+                  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`id`)
+                ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+            </pma:table>
+            <pma:table name="users">
+                CREATE TABLE `users` (
+                  `id` int NOT NULL AUTO_INCREMENT,
+                  `user_id` varchar(30) NOT NULL,
+                  `firstname` varchar(256) NOT NULL,
+                  `lastname` varchar(256) NOT NULL,
+                  `email` varchar(256) NOT NULL,
+                  `password` varchar(256) NOT NULL,
+                  `role` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'user',
+                  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`id`)
+                ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+            </pma:table>
+        </pma:database>
+    </pma:structure_schemas>
+
+    <!--
+    - Database: 'satellite_db'
+    -->
+    <database name="satellite_db">
+        <!-- Table client -->
+        <!-- Table collections -->
+        <!-- Table documents -->
+        <!-- Table users -->
+    </database>
+</pma_xml_export>

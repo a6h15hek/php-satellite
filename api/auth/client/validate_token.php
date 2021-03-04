@@ -1,7 +1,10 @@
 <?php
+    require "../../../startenv.php";
+    // Headers
+    header('Access-Control-Allow-Origin: *');
+    header('Content-Type: application/json');
     //imports
     include_once '../../../config/authentication.php';
-    include_once '../../../config/get_core.php';
 
     //get authorization token
     $headers = apache_request_headers();

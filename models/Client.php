@@ -99,7 +99,7 @@ class Client{
             return print_r(json_encode(
                 array(
                     'success'=>true,
-                    'message' => "Authorized.",
+                    'message' => "Copy this token & use as SECRET_KEY in client application.",
                     'token' => $jwt
                 )
             ));

@@ -16,7 +16,7 @@
         print_r(json_encode(
             array(
                 'success'=>false,
-                'message' => "empty"
+                'message' => "Access Denied."
             )
         ));
         exit();

@@ -70,21 +70,21 @@ class User{
             // execute the query, also check if query was successful
             if($stmt->execute()){
                 http_response_code(200);
-                return print_r(json_encode(
+                return json_encode(
                     array(
                         'success'=>true,
                         'message' => "User Created."
                     )
-                ));
+                );
             }
 
             http_response_code(500);
-            return print_r(json_encode(
+            return json_encode(
                 array(
                     'success'=>false,
                     'message' => "Unable to create User."
                 )
-            ));
+            );
         }catch (PDOException $e){
             $this->conn->rollBack();
             http_response_code(500);
@@ -154,21 +154,21 @@ class User{
             // generate jwt
             $jwt = JWT::encode($token, $_ENV['JWT_KEY']);
             http_response_code(200);
-            return print_r(json_encode(
+            return json_encode(
                 array(
                     'success'=>true,
                     'message' => "Login successfully.",
                     'token' => $jwt
                 )
-            ));
+            );
         }else{
             http_response_code(401);
-            return print_r(json_encode(
+            return json_encode(
                 array(
                     'success'=>false,
                     'message' => "email or password incorrect."
                 )
-            ));
+            );
         }
     }
 
@@ -183,7 +183,7 @@ class User{
             http_response_code(200);
     
             // show user details
-            echo json_encode(array(
+            return json_encode(array(
                 "success" => true,
                 "message" => "Access granted.",
                 "data" => $decoded->data
@@ -195,7 +195,7 @@ class User{
             http_response_code(401);
          
             // tell the user access denied  & show error message
-            echo json_encode(array(
+            return json_encode(array(
                 "success" => false,
                 "message" => "Access denied.",
                 "error" => $e->getMessage()
