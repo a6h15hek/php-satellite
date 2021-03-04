@@ -69,6 +69,7 @@ class User{
 
             // execute the query, also check if query was successful
             if($stmt->execute()){
+                http_response_code(200);
                 return print_r(json_encode(
                     array(
                         'success'=>true,
@@ -77,6 +78,7 @@ class User{
                 ));
             }
 
+            http_response_code(500);
             return print_r(json_encode(
                 array(
                     'success'=>false,
@@ -85,6 +87,7 @@ class User{
             ));
         }catch (PDOException $e){
             $this->conn->rollBack();
+            http_response_code(500);
             return json_encode(
                 array(
                     'success'=>false,
@@ -150,6 +153,7 @@ class User{
         
             // generate jwt
             $jwt = JWT::encode($token, $_ENV['JWT_KEY']);
+            http_response_code(200);
             return print_r(json_encode(
                 array(
                     'success'=>true,
@@ -158,6 +162,7 @@ class User{
                 )
             ));
         }else{
+            http_response_code(401);
             return print_r(json_encode(
                 array(
                     'success'=>false,
@@ -196,10 +201,5 @@ class User{
                 "error" => $e->getMessage()
             ));
         }
-    }
-    //delete user
-    public function delete(){
-
-    }
-    
+    }    
 }

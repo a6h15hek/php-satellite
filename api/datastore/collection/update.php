@@ -21,7 +21,7 @@
          return print_r(json_encode(
              array(
                  'success'=>false,
-                 'message' => "Empty fields"
+                 'message' => "Empty fields."
              )
          ));
     }

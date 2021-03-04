@@ -30,6 +30,7 @@ class Client{
     public function generate_client_id_password($password){
         $this->client_id = uniqid("CLI",false) . $this->generateRandomString(5);
         $password_hash = password_hash($password, PASSWORD_BCRYPT);
+        http_response_code(200);
         return print_r(json_encode(
             array(
                 'success'=>true,
@@ -94,6 +95,7 @@ class Client{
         
             // generate jwt
             $jwt = JWT::encode($token, $_ENV['JWT_KEY']);
+            http_response_code(200);
             return print_r(json_encode(
                 array(
                     'success'=>true,
@@ -102,33 +104,13 @@ class Client{
                 )
             ));
         }else{
+            http_response_code(401);
             return print_r(json_encode(
                 array(
                     'success'=>false,
                     'message' => "Incorrect Id or password."
                 )
             ));
-        }
-    }
-
-    //delete user
-    public function validate_token($jwt_token){
-        // if decode succeed, show user details
-        try {
-            // decode jwt
-            $decoded = JWT::decode($jwt_token, $_ENV['JWT_KEY'], array('HS256'));
-
-            //check the client id
-            if(!strcmp($decoded->data->client_id, $_ENV['CLIENT_ID'])){
-                // compare 
-                return true;
-            }else{
-                return false;
-            }
-        }catch (Exception $e){
-            // set response code
-            http_response_code(401);
-            return false;
         }
     }
     

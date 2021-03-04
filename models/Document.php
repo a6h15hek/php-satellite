@@ -46,6 +46,7 @@
              // executing and checking
              try{
                 if(!$stmt->execute()){
+                    http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
@@ -54,14 +55,13 @@
                     );
                 }
             }catch (Exception $e){
-                if(!$stmt->execute()){
-                    return json_encode(
-                        array(
-                            'success'=>false,
-                            'message' => $e->getMessage()
-                        )
-                    );
-                }
+                http_response_code(500);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => $e->getMessage()
+                    )
+                );
             }
 
             $row_count = $stmt->rowCount();
@@ -74,6 +74,7 @@
                     'updatedAt' => $row['updated_at'],
                     'createdAt' => $row['created_at']
                 );
+                http_response_code(200);
                 return json_encode(
                     array(
                         'success'=>true,
@@ -81,6 +82,7 @@
                     )
                 );
             } else{
+                http_response_code(401);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -111,6 +113,7 @@
 
         public function add($collection_name,$data_object){
             if(!$this->isJson($data_object)){
+                http_response_code(400);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -160,6 +163,7 @@
                  //commit changes
                  $this->conn->commit();
 
+                http_response_code(200);
                 return json_encode(
                     array(
                         'success'=>true,
@@ -172,6 +176,7 @@
             
             } catch (PDOException $e){
                 $this->conn->rollBack();
+                http_response_code(500);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -185,6 +190,7 @@
         // Write document using collection_name & document_name
         public function set($collection_name, $document_name, $data_object, $merge = false){
             if(!$this->isJson($data_object)){
+                http_response_code(400);
                 return json_encode(
                     array(
                         'success'=> false,
@@ -271,6 +277,7 @@
                  //commit changes
                  $this->conn->commit();
 
+                http_response_code(200);
                 return json_encode(
                     array(
                         'success'=>true,
@@ -280,6 +287,7 @@
             
             } catch (PDOException $e){
                 $this->conn->rollBack();
+                http_response_code(500);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -337,6 +345,7 @@
                 if($action == "remove"){
                     //document not exist to remove element
                     if(!$this->document_id){
+                        http_response_code(404);
                         return json_encode(
                             array(
                                 'success'=>false,
@@ -404,6 +413,7 @@
                  //commit changes
                  $this->conn->commit();
 
+                http_response_code(200);
                 if($action == "add"){
                     return json_encode(
                         array(
@@ -422,6 +432,7 @@
             
             } catch (PDOException $e){
                 $this->conn->rollBack();
+                http_response_code(500);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -447,6 +458,7 @@
              // executing and checking
             try{
                 if(!$stmt->execute()){
+                    http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
@@ -455,14 +467,13 @@
                     );
                 }
             }catch (Exception $e){
-                if(!$stmt->execute()){
+                http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
                             'message' => $e->getMessage()
                         )
                     );
-                }
             }
             
             $row_count = $stmt->rowCount();
@@ -483,6 +494,7 @@
                     array_push($document_array, $document_item);
                 }
                 // return to json
+                http_response_code(200);
                 return json_encode(
                     array(
                         'success'=>true,
@@ -492,10 +504,11 @@
                 );
             }else{
                 // No document
+                http_response_code(404);
                 return json_encode(
                     array(
                         'success'=>false,
-                        'message' => 'No collection found.'
+                        'message' => 'Collection not found.'
                     )
                 );
             }
@@ -516,6 +529,7 @@
             // executing and checking
             try{
                 if(!$stmt->execute()){
+                    http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
@@ -524,16 +538,16 @@
                     );
                 }
             }catch (Exception $e){
-                if(!$stmt->execute()){
+                http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
                             'message' => $e->getMessage()
                         )
                     );
-                }
             }
 
+            http_response_code(200);
             return json_encode(
                 array(
                     'success'=>true,

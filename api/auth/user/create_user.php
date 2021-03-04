@@ -34,7 +34,7 @@
     else{
     
         // set response code
-        http_response_code(204);
+        http_response_code(400);
     
         // display message: unable to create user
         return print_r(json_encode(

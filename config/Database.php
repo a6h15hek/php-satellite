@@ -21,7 +21,14 @@
                 $this->conn = new PDO('mysql:host=' . $this->host . ';dbname=' . $this->db_name, $this->username, $this->password);
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch(PDOException $e){
-                echo 'Connection Error: ' . $e->getMessage();
+                http_response_code(500);
+                print_r(json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => $e->getMessage(),
+                    )
+                ));
+                exit();
             }
             return $this->conn;
         }

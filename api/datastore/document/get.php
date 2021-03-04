@@ -15,6 +15,7 @@
         // printing array
         print_r($results);
     }else{
+        http_response_code(400);
         print_r(json_encode(
             array(
                 'success'=>false,

@@ -21,7 +21,8 @@
         // printing array
         print_r($results);
     }else{
-        print_r(json_encode(
+        http_response_code(400);
+        return print_r(json_encode(
             array(
                 'success'=>false,
                 'message'=>'collection not specified'

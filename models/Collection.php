@@ -40,6 +40,7 @@
              // executing and checking
             try{
                 if(!$stmt->execute()){
+                    http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
@@ -48,14 +49,13 @@
                     );
                 }
             }catch (Exception $e){
-                if(!$stmt->execute()){
-                    return json_encode(
-                        array(
-                            'success'=>false,
-                            'message' => $e->getMessage()
-                        )
-                    );
-                }
+                http_response_code(500);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => $e->getMessage()
+                    )
+                );
             }
             
             $row_count = $stmt->rowCount();
@@ -74,6 +74,7 @@
                     array_push($collection_array, $collection_item);
                 }
                 // return to json
+                http_response_code(200);
                 return json_encode(
                     array(
                         'success'=>true,
@@ -82,10 +83,11 @@
                 );
             }else{
                 // No document
+                http_response_code(204);
                 return json_encode(
                     array(
                         'success'=>false,
-                        'message' => 'No collection found.'
+                        'message' => 'No collections.'
                     )
                 );
             }
@@ -111,6 +113,7 @@
            // executing and checking
            try{
                 if(!$stmt->execute()){
+                    http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
@@ -119,14 +122,13 @@
                     );
                 }
            }catch (Exception $e){
-                if(!$stmt->execute()){
-                    return json_encode(
-                        array(
-                            'success'=>false,
-                            'message' => $e->getMessage()
-                        )
-                    );
-                }
+                http_response_code(500);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => $e->getMessage()
+                    )
+                );
            }
           
             $row_count = $stmt->rowCount();
@@ -138,6 +140,7 @@
                     'collection_id' => $row['id'],
                     'collection_name' => $row['collection_name']
                 );
+                http_response_code(200);
                 return json_encode(
                     array(
                         'success'=>true,
@@ -145,6 +148,7 @@
                     )
                 );
             } else{
+                http_response_code(404);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -171,6 +175,7 @@
 
             try{
                 if($stmt->execute()) {
+                    http_response_code(200);
                     return json_encode(
                         array(
                             'success'=>true,
@@ -178,6 +183,7 @@
                         )
                     );
                 }else{
+                    http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
@@ -186,6 +192,7 @@
                     );
                 }
             }catch (Exception $e){
+                http_response_code(500);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -214,6 +221,7 @@
 
             try{
                 if($stmt->execute()) {
+                    http_response_code(200);
                     return json_encode(
                         array(
                             'success'=>true,
@@ -221,6 +229,7 @@
                         )
                     );
                 }else{
+                    http_response_code(500);
                     return json_encode(
                         array(
                             'success'=>false,
@@ -229,6 +238,7 @@
                     );
                 }
             }catch (Exception $e){
+                http_response_code(500);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -258,6 +268,7 @@
 
             try{
                 if($stmt->execute()) {
+                    http_response_code(200);
                     return json_encode(
                         array(
                             'success'=>true,
@@ -273,6 +284,7 @@
                     );
                 }
             }catch (Exception $e){
+                http_response_code(500);
                 return json_encode(
                     array(
                         'success'=>false,

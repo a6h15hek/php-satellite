@@ -13,10 +13,11 @@
         print_r($result);
         // catch will be here
     }else{
+        http_response_code(400);
         return print_r(json_encode(
             array(
                 'success'=>false,
-                'message' => "Invalid token.",
+                'message' => "Empty auth token.",
             )
         ));
     }
