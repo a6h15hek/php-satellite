@@ -1,16 +1,6 @@
 <?php 
-    require "../../../startenv.php";
-    // Headers
-    header('Access-Control-Allow-Origin: *');
-    header('Content-Type: application/json');
-
-    //imports
-    include_once '../../../config/Database.php';
+    include_once '../../../config/get_core.php';
     include_once '../../../models/Document.php';
-
-    // Initialize database 
-    $database = new Database();
-    $db = $database->connect();
 
     // Creating a Collection Object
     $document = new Document($db); 

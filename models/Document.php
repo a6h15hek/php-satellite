@@ -23,6 +23,8 @@
          public $data_object;
          public $updated_at;
          public $created_at;
+         public $start;
+         public $end;
  
          public function __construct($db){
              $this->conn = $db;
@@ -272,8 +274,7 @@
                 return json_encode(
                     array(
                         'success'=>true,
-                        'message' => "Document set Successfully.",
-                        'document_name' => $this->document_name
+                        'message' => "Document set Successfully."
                     )
                 );
             
@@ -317,15 +318,20 @@
                     $stmt->closeCursor();
                  }
 
-                $query3 = 'SELECT id FROM documents WHERE document_name=:document_name';
+                $query3 = 'SELECT id, data_object FROM documents WHERE document_name=:document_name';
                  //preparing statement
                 $stmt = $this->conn->prepare($query3);
                  // Bind ID
                 $stmt->bindParam(':document_name', $document_name);
                 $stmt->execute();
 
-                 //get column id 
-                $this->document_id =$stmt->fetchColumn();
+                if($stmt->rowCount() > 0){
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $this->document_id = $row['id'];
+                    $this->data_object = $row['data_object'];
+                }else{
+                    $this->document_id = false;
+                }
                 $stmt->closeCursor();
 
                 if($action == "remove"){
@@ -354,16 +360,24 @@
                 }else if($action == "add"){
                     if($this->document_id){
                         //document exists
-                        //updating document
-
-                        $query4 = 'UPDATE documents
-                                    SET data_object = JSON_ARRAY_APPEND(data_object, :arrayfield, :arrayelement)
-                                    WHERE id = :document_id AND JSON_SEARCH(data_object, "one", :arrayelement) IS NULL';
+                        $this->data_object = json_decode($this->data_object,true);
+                        if(array_key_exists($arrayfield, $this->data_object)){
+                            //updating document
+                            $query4 = 'UPDATE documents
+                                SET data_object = JSON_ARRAY_APPEND(data_object, :arrayfield, :arrayelement)
+                                WHERE id = :document_id AND JSON_SEARCH(data_object, "one", :arrayelement) IS NULL';
+                            $arrayfield = "$." . $arrayfield;
+                        }else{
+                            //updating document
+                            $query4 = 'UPDATE documents
+                                SET data_object = JSON_MERGE_PATCH(data_object, JSON_OBJECT(:arrayfield, JSON_ARRAY(:arrayelement)))
+                                WHERE id = :document_id AND JSON_SEARCH(data_object, "one", :arrayelement) IS NULL';
+                        }
+                        
                         //preparing statement
                         $stmt = $this->conn->prepare($query4);
                         // Bind ID
                         $stmt->bindParam(':document_id', $this->document_id);
-                        $arrayfield = "$." . $arrayfield;
                         $stmt->bindParam(':arrayfield', $arrayfield);
                         $stmt->bindParam(':arrayelement', $arrayelement);
                         $stmt->execute();
@@ -418,15 +432,17 @@
         }
 
         //admins function
-        public function getdocuments($collection_name){
+        public function getdocuments($collection_name,$start=0,$end=10){
             $query = 'SELECT doc.updated_at, doc.created_at, doc.document_name, col.collection_name, doc.data_object
                       FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
-                      WHERE col.collection_name = ? ';
+                      WHERE col.collection_name = :collection_name LIMIT :start , :end ';
 
             //preparing statement
             $stmt = $this->conn->prepare($query);
             // Bind ID
-            $stmt->bindParam(1, $collection_name);
+            $stmt->bindParam(':collection_name', $collection_name);
+            $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
+            $stmt->bindValue(':end', (int) trim($end), PDO::PARAM_INT);
 
              // executing and checking
             try{

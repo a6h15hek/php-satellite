@@ -1,35 +1,28 @@
 <?php 
-    require "../../../startenv.php";
-    // Headers
-    header('Access-Control-Allow-Origin: *');
-    header('Content-Type: application/json');
-    header('Access-Control-Allow-Methods: POST');
-    header('Access-Control-Allow-Headers: Access-Control-Allow-Headers,Content-Type,Access-Control-Allow-Methods, Authorization, X-Requested-With');
-
-    //imports
-    include_once '../../../config/Database.php';
+    include_once '../../../config/post_core.php';
     include_once '../../../models/Collection.php';
-
-    // Initialize database 
-    $database = new Database();
-    $db = $database->connect();
 
     // Creating a Collection Object
     $collection = new Collection($db);
 
-    // Get raw posted data
-    $data = json_decode(file_get_contents("php://input"));
+    if(
+        !empty($data->collection_name) &&
+        !empty($data->new_collection_name)
+    ){
+        $collection_name = $data->collection_name;
+        $new_collection_name = $data->new_collection_name;
+        $result = $collection->update($collection_name,$new_collection_name);
+        print_r($result);
+    }else{
+         // set response code
+         http_response_code(400);
     
-    if($data === "" || $data === null){
-        return print_r(json_encode(
-            array(
-                'success'=>false,
-                'message' => "collection name is null or undefined or empty."
-            )
-        ));
+         // display message: unable to create user
+         return print_r(json_encode(
+             array(
+                 'success'=>false,
+                 'message' => "Empty fields"
+             )
+         ));
     }
-    $collection_name = $data->collection_name;
-    $new_collection_name = $data->new_collection_name;
-    $result = $collection->update($collection_name,$new_collection_name);
-    print_r($result);
 ?>

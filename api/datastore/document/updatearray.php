@@ -1,43 +1,38 @@
 <?php 
-    require "../../../startenv.php";
-    // Headers
-    header('Access-Control-Allow-Origin: *');
-    header('Content-Type: application/json');
-    header('Access-Control-Allow-Methods: POST');
-    header('Access-Control-Allow-Headers: Access-Control-Allow-Headers,Content-Type,Access-Control-Allow-Methods, Authorization, X-Requested-With');
-
-    //imports
-    include_once '../../../config/Database.php';
+    include_once '../../../config/post_core.php';
     include_once '../../../models/Document.php';
 
-    // Initialize database 
-    $database = new Database();
-    $db = $database->connect();
+    if(
+        !empty($data->collection_name) &&
+        !empty($data->arrayfield) &&
+        !empty($data->arrayelement) &&
+        !empty($data->document_name)
+    ){
+        // Creating a Collection Object
+        $document = new Document($db);
 
-    // Creating a Collection Object
-    $document = new Document($db);
+        $collection_name = $data->collection_name;
+        $document_name = $data->document_name;
+        $arrayfield = $data->arrayfield;
+        $arrayelement = $data->arrayelement;
 
-    // Get raw posted data
-    $data = json_decode(file_get_contents("php://input"));
+        if(isset($_GET['action'])){
+            $result = $document->updatearray($collection_name,$document_name,$arrayfield,$arrayelement,$_GET['action']);
+        }else{
+            $result = $document->updatearray($collection_name,$document_name,$arrayfield,$arrayelement);
+        }
+        print_r($result);
+    }else{
+        // set response code
+        http_response_code(400);
     
-    if($data === "" || $data === null){
+        // display message: unable to create user
         return print_r(json_encode(
             array(
                 'success'=>false,
-                'message' => "collections name not defined or dataobject not defined"
+                'message' => "Empty fields"
             )
         ));
     }
-
-    $collection_name = $data->collection_name;
-    $document_name = $data->document_name;
-    $arrayfield = $data->arrayfield;
-    $arrayelement = $data->arrayelement;
-
-    if(isset($_GET['action'])){
-        $result = $document->updatearray($collection_name,$document_name,$arrayfield,$arrayelement,$_GET['action']);
-    }else{
-        $result = $document->updatearray($collection_name,$document_name,$arrayfield,$arrayelement);
-    }
-    print_r($result);
+    
 ?>

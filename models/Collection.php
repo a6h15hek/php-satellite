@@ -217,7 +217,7 @@
                     return json_encode(
                         array(
                             'success'=>true,
-                            'message' => 'Collection Updated'
+                            'message' => 'Collection name Updated'
                         )
                     );
                 }else{
@@ -261,7 +261,7 @@
                     return json_encode(
                         array(
                             'success'=>true,
-                            'message' => 'Collection deleted and related document deleted.'
+                            'message' => 'Collection deleted and related documents deleted.'
                         )
                     );
                 }else{
