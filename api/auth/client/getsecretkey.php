@@ -1,17 +1,17 @@
-<?php
-
-    //imports
+<?php 
     include_once '../../../config/post_core.php';
-    include_once '../../../models/User.php';
+    include_once '../../../models/Client.php';
 
     if(
-        !empty($data->email) &&
+        !empty($data->client_id) &&
         !empty($data->password)
     ){
-        // instantiate product object
-        $user = new User($db);
+        // Creating a Collection Object
+        $client = new Client($db);
 
-        $result = $user->login($data->email,$data->password);
+        $client_id = $data->client_id;
+        $password = $data->password;
+        $result = $client->get_secret_key($client_id,$password);
         print_r($result);
     }else{
          // set response code
@@ -25,6 +25,4 @@
              )
          ));
     }
-    
-
 ?>

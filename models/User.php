@@ -1,5 +1,7 @@
 <?php
 // 'user' object
+require "../../../vendor/autoload.php";
+use \Firebase\JWT\JWT;
 class User{
  
     // database connection and table name
@@ -126,4 +128,78 @@ class User{
         // return false if email does not exist in the database
         return false;
     }
+
+    //login user
+    public function login($email, $password){
+        // set product property values
+        $this->email = $email;
+        $email_exists = $this->emailExists();
+
+        // check if email exists and if password is correct
+        if($email_exists && password_verify($password, $this->password)){
+        
+            $token = array(
+            "iat" => time(),
+            "iss" =>  $_ENV['JWT_ISSUER'],
+            "data" => array(
+                    "user_id" => $this->user_id,
+                    "email" => $this->email,
+                    "role" => $this->role
+                )
+            );
+        
+            // generate jwt
+            $jwt = JWT::encode($token, $_ENV['JWT_KEY']);
+            return print_r(json_encode(
+                array(
+                    'success'=>true,
+                    'message' => "Login successfully.",
+                    'token' => $jwt
+                )
+            ));
+        }else{
+            return print_r(json_encode(
+                array(
+                    'success'=>false,
+                    'message' => "email or password incorrect."
+                )
+            ));
+        }
+    }
+
+    //delete user
+    public function validate_token($jwt_token){
+        // if decode succeed, show user details
+        try {
+            // decode jwt
+            $decoded = JWT::decode($jwt_token,$_ENV['JWT_KEY'], array('HS256'));
+    
+            // set response code
+            http_response_code(200);
+    
+            // show user details
+            echo json_encode(array(
+                "success" => true,
+                "message" => "Access granted.",
+                "data" => $decoded->data
+            ));
+    
+        }catch (Exception $e){
+ 
+            // set response code
+            http_response_code(401);
+         
+            // tell the user access denied  & show error message
+            echo json_encode(array(
+                "success" => false,
+                "message" => "Access denied.",
+                "error" => $e->getMessage()
+            ));
+        }
+    }
+    //delete user
+    public function delete(){
+
+    }
+    
 }
