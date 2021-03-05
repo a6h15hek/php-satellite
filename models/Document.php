@@ -13,7 +13,14 @@
          // database variables
          private $conn = null;
          private $table = 'documents';
- 
+
+         //user properties
+         public $user_id;
+         public $role;
+         public $created_by;
+         private $read_per;
+         private $write_per;
+
          // collection Properties
          public $id;
          public $collection_id;
@@ -32,16 +39,30 @@
 
         // Get object using collection_name & document_name
         public function get($collection_name,$document_name){
-            $query = 'SELECT doc.updated_at, doc.created_at , doc.data_object
+            if(!strcmp($this->role, "admin")){
+                $query = 'SELECT doc.updated_at, doc.created_at , doc.data_object
                       FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
                       WHERE col.collection_name = :collection_name AND doc.document_name = :document_name 
                       LIMIT 0,1 ';
 
-            //preparing statement
-            $stmt = $this->conn->prepare($query);
-            // Bind ID
-            $stmt->bindParam(':collection_name', $collection_name);
-            $stmt->bindParam(':document_name', $document_name);
+                 //preparing statement
+                $stmt = $this->conn->prepare($query);
+                // Bind ID
+                $stmt->bindParam(':collection_name', $collection_name);
+                $stmt->bindParam(':document_name', $document_name);
+            }else{
+                $query = 'SELECT doc.updated_at, doc.created_at , doc.data_object
+                      FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
+                      WHERE col.collection_name = :collection_name AND doc.document_name = :document_name 
+                      AND (col.read_per = "public" OR doc.created_by = :user_id )
+                      LIMIT 0,1 ';
+                 //preparing statement
+                 $stmt = $this->conn->prepare($query);
+                 // Bind ID
+                 $stmt->bindParam(':collection_name', $collection_name);
+                 $stmt->bindParam(':document_name', $document_name);
+                 $stmt->bindParam(':user_id', $this->user_id);
+            }
 
              // executing and checking
              try{
@@ -86,7 +107,7 @@
                 return json_encode(
                     array(
                         'success'=>false,
-                        'message'=>'Document not found.'
+                        'message'=>'Document not found or permission denied.'
                     )
                 );
             }
@@ -123,18 +144,25 @@
             }
             try {
                 $this->conn->beginTransaction();
-                $query1 = 'SELECT id FROM collections WHERE collection_name=:collection_name';
+                $query1 = 'SELECT id, write_per FROM collections WHERE collection_name=:collection_name';
                  //preparing statement
                  $stmt = $this->conn->prepare($query1);
                  // Bind ID
                  $stmt->bindParam(':collection_name', $collection_name);
                  $stmt->execute();
 
-                 //get column id 
-                 $this->collection_id =$stmt->fetchColumn();
+                //get column id 
+                // $this->collection_id =$stmt->fetchColumn();
+                if($stmt->rowCount() > 0){
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $this->collection_id = $row['id'];
+                    $this->write_per = $row['write_per'];
+                }else{
+                    $this->collection_id = false;
+                }
                  $stmt->closeCursor();
 
-                 if(!$this->collection_id){
+                if(!$this->collection_id){
                     $query2 = 'INSERT INTO collections (collection_name) 
                                VALUES (:collectionname) ';
                     //preparing statement
@@ -145,10 +173,11 @@
                     $stmt->execute(array(':collectionname' => $this->collection_name));
                     $this->collection_id =  $this->conn->lastInsertId();
                     $stmt->closeCursor();
-                 }
+                }
 
-                $query3 = 'INSERT INTO documents (collection_id, document_name, data_object)
-                           VALUES (:collection_id,:document_name,:data_object) ';
+
+                $query3 = 'INSERT INTO documents (collection_id, document_name, data_object, created_by)
+                           VALUES (:collection_id,:document_name,:data_object,:created_by) ';
                  //preparing statement
                  $stmt = $this->conn->prepare($query3);
                  // Bind ID
@@ -157,6 +186,7 @@
                  $stmt->bindParam(':data_object', $this->data_object);
                  $this->document_name = uniqid("DOC",false) . $this->generateRandomString(5);
                  $stmt->bindParam(':document_name', $this->document_name);
+                 $stmt->bindParam(':created_by', $this->user_id);
                  $stmt->execute();
                  $stmt->closeCursor();
 
@@ -171,8 +201,6 @@
                         'document_name' => $this->document_name
                     )
                 );
-
-
             
             } catch (PDOException $e){
                 $this->conn->rollBack();
@@ -200,7 +228,7 @@
             }
             try {
                 $this->conn->beginTransaction();
-                $query1 = 'SELECT id FROM collections WHERE collection_name=:collection_name';
+                $query1 = 'SELECT id, write_per FROM collections WHERE collection_name=:collection_name';
                  //preparing statement
                 $stmt = $this->conn->prepare($query1);
                  // Bind ID
@@ -208,7 +236,14 @@
                 $stmt->execute();
 
                  //get column id 
-                $this->collection_id =$stmt->fetchColumn();
+                //$this->collection_id =$stmt->fetchColumn();
+                if($stmt->rowCount() > 0){
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $this->collection_id = $row['id'];
+                    $this->write_per = $row['write_per'];
+                }else{
+                    $this->collection_id = false;
+                }
                 $stmt->closeCursor();
 
                 if(!$this->collection_id){
@@ -224,7 +259,7 @@
                     $stmt->closeCursor();
                  }
 
-                $query3 = 'SELECT id FROM documents WHERE document_name=:document_name';
+                $query3 = 'SELECT id, created_by FROM documents WHERE document_name=:document_name';
                  //preparing statement
                 $stmt = $this->conn->prepare($query3);
                  // Bind ID
@@ -232,36 +267,54 @@
                 $stmt->execute();
 
                  //get column id 
-                $this->document_id =$stmt->fetchColumn();
+                // $this->document_id =$stmt->fetchColumn();
+                if($stmt->rowCount() > 0){
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $this->document_id = $row['id'];
+                    $this->created_by = $row['created_by'];
+                }else{
+                    $this->document_id = false;
+                }
+                
                 $stmt->closeCursor();
 
 
                 if($this->document_id){
                     //document exists
-                    //updating document
-                    if($merge){
-                        $query4 = 'UPDATE documents
-                                SET data_object = JSON_MERGE_PATCH(data_object, :data_object) 
-                                WHERE id = :document_id ';
+                    //check for user permission to change document
+                    if(!strcmp($this->write_per,"public") || !strcmp($this->role, "admin") || !strcmp($this->user_id, $this->created_by)){
+                         //updating document
+                        if($merge){
+                            $query4 = 'UPDATE documents
+                                    SET data_object = JSON_MERGE_PATCH(data_object, :data_object) 
+                                    WHERE id = :document_id ';
+                        }else{
+                            $query4 = 'UPDATE documents
+                                    SET data_object = :data_object
+                                    WHERE id = :document_id ';
+                        }
+                        //preparing statement
+                        $stmt = $this->conn->prepare($query4);
+                        // Bind ID
+                        $stmt->bindParam(':document_id', $this->document_id);
+                        $this->data_object = json_encode($data_object);
+                        $stmt->bindParam(':data_object', $this->data_object);
+                        $stmt->execute();
+                        $stmt->closeCursor();
                     }else{
-                        $query4 = 'UPDATE documents
-                                SET data_object = :data_object
-                                WHERE id = :document_id ';
+                        http_response_code(401);
+                        return json_encode(
+                            array(
+                                'success'=>false,
+                                'message' => "access denied. user_id not match."
+                            )
+                        );   
                     }
-                    //preparing statement
-                    $stmt = $this->conn->prepare($query4);
-                    // Bind ID
-                    $stmt->bindParam(':document_id', $this->document_id);
-                    $this->data_object = json_encode($data_object);
-                    $stmt->bindParam(':data_object', $this->data_object);
-                    $stmt->execute();
-                    $stmt->closeCursor();
-
                     
                 }else{
                     //document not exist
-                    $query5 = 'INSERT INTO documents (collection_id, document_name, data_object)
-                           VALUES (:collection_id,:document_name,:data_object) ';
+                    $query5 = 'INSERT INTO documents (collection_id, document_name, data_object, created_by)
+                           VALUES (:collection_id,:document_name,:data_object,:created_by) ';
                     //preparing statement
                     $stmt = $this->conn->prepare($query5);
                     // Bind ID
@@ -270,13 +323,13 @@
                     $stmt->bindParam(':data_object', $this->data_object);
                     $this->document_name = $document_name;
                     $stmt->bindParam(':document_name', $this->document_name);
+                    $stmt->bindParam(':created_by', $this->user_id);
                     $stmt->execute();
                     $stmt->closeCursor();
                 }
                 
                  //commit changes
                  $this->conn->commit();
-
                 http_response_code(200);
                 return json_encode(
                     array(
@@ -310,7 +363,14 @@
                 $stmt->execute();
 
                  //get column id 
-                $this->collection_id =$stmt->fetchColumn();
+                // $this->collection_id =$stmt->fetchColumn();
+                if($stmt->rowCount() > 0){
+                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $this->collection_id = $row['id'];
+                    $this->write_per = $row['write_per'];
+                }else{
+                    $this->collection_id = false;
+                }
                 $stmt->closeCursor();
 
                 if(!$this->collection_id){
@@ -326,7 +386,7 @@
                     $stmt->closeCursor();
                  }
 
-                $query3 = 'SELECT id, data_object FROM documents WHERE document_name=:document_name';
+                $query3 = 'SELECT id, data_object, created_by FROM documents WHERE document_name=:document_name';
                  //preparing statement
                 $stmt = $this->conn->prepare($query3);
                  // Bind ID
@@ -337,78 +397,88 @@
                     $row = $stmt->fetch(PDO::FETCH_ASSOC);
                     $this->document_id = $row['id'];
                     $this->data_object = $row['data_object'];
+                    $this->created_by = $row['created_by'];
                 }else{
                     $this->document_id = false;
                 }
                 $stmt->closeCursor();
 
-                if($action == "remove"){
-                    //document not exist to remove element
-                    if(!$this->document_id){
-                        http_response_code(404);
+                if(!strcmp($this->write_per,"public") || !strcmp($this->role, "admin") || !strcmp($this->user_id, $this->created_by)){
+                    if($action == "remove"){
+                        //document not exist to remove element
+                        if(!$this->document_id){
+                            http_response_code(404);
+                            return json_encode(
+                                array(
+                                    'success'=>false,
+                                    'message' => "document not exist."
+                                )
+                            );
+                        }
+                            $query4 = 'UPDATE documents
+                                        SET data_object = JSON_REMOVE(data_object, JSON_UNQUOTE(JSON_SEARCH(data_object, "one", :arrayelement)))
+                                        WHERE id = :document_id  AND JSON_SEARCH(data_object, "one", :arrayelement) IS NOT NULL';
+                            //preparing statement
+                            $stmt = $this->conn->prepare($query4);
+                            // Bind ID
+                            $stmt->bindParam(':document_id', $this->document_id);
+                            // $arrayfield = "$." . $arrayfield;
+                            // $stmt->bindParam(':arrayfield', $arrayfield);
+                            $stmt->bindParam(':arrayelement', $arrayelement);
+                            $stmt->execute();
+                            $stmt->closeCursor();
+    
+                    }else if($action == "add"){
+                        if($this->document_id){
+                            //document exists
+                            $this->data_object = json_decode($this->data_object,true);
+                            if(array_key_exists($arrayfield, $this->data_object)){
+                                //updating document
+                                $query4 = 'UPDATE documents
+                                    SET data_object = JSON_ARRAY_APPEND(data_object, :arrayfield, :arrayelement)
+                                    WHERE id = :document_id AND JSON_SEARCH(data_object, "one", :arrayelement) IS NULL';
+                                $arrayfield = "$." . $arrayfield;
+                            }else{
+                                //updating document
+                                $query4 = 'UPDATE documents
+                                    SET data_object = JSON_MERGE_PATCH(data_object, JSON_OBJECT(:arrayfield, JSON_ARRAY(:arrayelement)))
+                                    WHERE id = :document_id AND JSON_SEARCH(data_object, "one", :arrayelement) IS NULL';
+                            }
+                            
+                            //preparing statement
+                            $stmt = $this->conn->prepare($query4);
+                            // Bind ID
+                            $stmt->bindParam(':document_id', $this->document_id);
+                            $stmt->bindParam(':arrayfield', $arrayfield);
+                            $stmt->bindParam(':arrayelement', $arrayelement);
+                            $stmt->execute();
+                            $stmt->closeCursor();
+                            
+                        }else{
+                            //document not exist
+                            $query5 = 'INSERT INTO documents (collection_id, document_name, data_object)
+                                   VALUES (:collection_id,:document_name, JSON_OBJECT(:arrayfield, JSON_ARRAY(:arrayelement))) ';
+                            //preparing statement
+                            $stmt = $this->conn->prepare($query5);
+                            // Bind ID
+                            $stmt->bindParam(':collection_id', $this->collection_id);
+                            $stmt->bindParam(':arrayfield', $arrayfield);
+                            $stmt->bindParam(':arrayelement', $arrayelement);
+                            $this->document_name = $document_name;
+                            $stmt->bindParam(':document_name', $this->document_name);
+                            $stmt->execute();
+                            $stmt->closeCursor();
+                        }
+                    }
+                }else{
+                    http_response_code(401);
                         return json_encode(
                             array(
                                 'success'=>false,
-                                'message' => "document not exist."
+                                'message' => "access denied. user_id not match."
                             )
-                        );
-                    }
-                        $query4 = 'UPDATE documents
-                                    SET data_object = JSON_REMOVE(data_object, JSON_UNQUOTE(JSON_SEARCH(data_object, "one", :arrayelement)))
-                                    WHERE id = :document_id  AND JSON_SEARCH(data_object, "one", :arrayelement) IS NOT NULL';
-                        //preparing statement
-                        $stmt = $this->conn->prepare($query4);
-                        // Bind ID
-                        $stmt->bindParam(':document_id', $this->document_id);
-                        // $arrayfield = "$." . $arrayfield;
-                        // $stmt->bindParam(':arrayfield', $arrayfield);
-                        $stmt->bindParam(':arrayelement', $arrayelement);
-                        $stmt->execute();
-                        $stmt->closeCursor();
-
-                }else if($action == "add"){
-                    if($this->document_id){
-                        //document exists
-                        $this->data_object = json_decode($this->data_object,true);
-                        if(array_key_exists($arrayfield, $this->data_object)){
-                            //updating document
-                            $query4 = 'UPDATE documents
-                                SET data_object = JSON_ARRAY_APPEND(data_object, :arrayfield, :arrayelement)
-                                WHERE id = :document_id AND JSON_SEARCH(data_object, "one", :arrayelement) IS NULL';
-                            $arrayfield = "$." . $arrayfield;
-                        }else{
-                            //updating document
-                            $query4 = 'UPDATE documents
-                                SET data_object = JSON_MERGE_PATCH(data_object, JSON_OBJECT(:arrayfield, JSON_ARRAY(:arrayelement)))
-                                WHERE id = :document_id AND JSON_SEARCH(data_object, "one", :arrayelement) IS NULL';
-                        }
-                        
-                        //preparing statement
-                        $stmt = $this->conn->prepare($query4);
-                        // Bind ID
-                        $stmt->bindParam(':document_id', $this->document_id);
-                        $stmt->bindParam(':arrayfield', $arrayfield);
-                        $stmt->bindParam(':arrayelement', $arrayelement);
-                        $stmt->execute();
-                        $stmt->closeCursor();
-                        
-                    }else{
-                        //document not exist
-                        $query5 = 'INSERT INTO documents (collection_id, document_name, data_object)
-                               VALUES (:collection_id,:document_name, JSON_OBJECT(:arrayfield, JSON_ARRAY(:arrayelement))) ';
-                        //preparing statement
-                        $stmt = $this->conn->prepare($query5);
-                        // Bind ID
-                        $stmt->bindParam(':collection_id', $this->collection_id);
-                        $stmt->bindParam(':arrayfield', $arrayfield);
-                        $stmt->bindParam(':arrayelement', $arrayelement);
-                        $this->document_name = $document_name;
-                        $stmt->bindParam(':document_name', $this->document_name);
-                        $stmt->execute();
-                        $stmt->closeCursor();
-                    }
+                        );      
                 }
-                
                 
                  //commit changes
                  $this->conn->commit();
@@ -444,16 +514,33 @@
 
         //admins function
         public function getdocuments($collection_name,$start=0,$end=10){
-            $query = 'SELECT doc.updated_at, doc.created_at, doc.document_name, col.collection_name, doc.data_object
+            if(!strcmp($this->role, "admin")){
+                $query = 'SELECT doc.updated_at, doc.created_at, doc.document_name, col.collection_name, doc.data_object
                       FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
                       WHERE col.collection_name = :collection_name LIMIT :start , :end ';
+                      //preparing statement
+                $stmt = $this->conn->prepare($query);
+                // Bind ID
+                $stmt->bindParam(':collection_name', $collection_name);
+                $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
+                $stmt->bindValue(':end', (int) trim($end), PDO::PARAM_INT);
+            }else{
+                $query = 'SELECT doc.updated_at, doc.created_at, doc.document_name, col.collection_name, doc.data_object
+                      FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
+                      WHERE col.collection_name = :collection_name 
+                      AND (col.read_per = "public" OR doc.created_by = :user_id )
+                      LIMIT :start , :end ';
 
-            //preparing statement
-            $stmt = $this->conn->prepare($query);
-            // Bind ID
-            $stmt->bindParam(':collection_name', $collection_name);
-            $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
-            $stmt->bindValue(':end', (int) trim($end), PDO::PARAM_INT);
+                //preparing statement
+                $stmt = $this->conn->prepare($query);
+                // Bind ID
+                $stmt->bindParam(':collection_name', $collection_name);
+                $stmt->bindParam(':user_id', $this->user_id);
+                $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
+                $stmt->bindValue(':end', (int) trim($end), PDO::PARAM_INT);
+            }
+
+            
 
              // executing and checking
             try{
@@ -515,16 +602,32 @@
         }
 
         public function deletedocument($collection_name,$document_name){
-            $query = 'DELETE FROM ' . $this->table . ' 
+            if(!strcmp($this->role, "admin")){
+                $query = 'DELETE FROM ' . $this->table . ' 
                     WHERE document_name = :document_name 
                     AND 
                     collection_id IN (SELECT id FROM collections WHERE collection_name = :collection_name )';
 
-            //preparing statement
-            $stmt = $this->conn->prepare($query);
-            // Bind ID
-            $stmt->bindParam(':collection_name', $collection_name);
-            $stmt->bindParam(':document_name', $document_name);
+                    //preparing statement
+                    $stmt = $this->conn->prepare($query);
+                    // Bind ID
+                    $stmt->bindParam(':collection_name', $collection_name);
+                    $stmt->bindParam(':document_name', $document_name);
+            }else{
+                $query = 'DELETE FROM ' . $this->table . ' 
+                    WHERE document_name = :document_name
+                    AND
+                    created_by = :created_by 
+                    AND 
+                    collection_id IN (SELECT id FROM collections WHERE collection_name = :collection_name AND write_per = "private" )';
+
+                //preparing statement
+                $stmt = $this->conn->prepare($query);
+                // Bind ID
+                $stmt->bindParam(':collection_name', $collection_name);
+                $stmt->bindParam(':document_name', $document_name);
+                $stmt->bindParam(':created_by', $this->user_id);
+            }
 
             // executing and checking
             try{
@@ -547,13 +650,24 @@
                     );
             }
 
-            http_response_code(200);
-            return json_encode(
-                array(
-                    'success'=>true,
-                    'data'=>"document deleted."
-                )
-            );
+            $row_count = $stmt->rowCount();
+            if($row_count > 0){
+                http_response_code(200);
+                return json_encode(
+                    array(
+                        'success'=>true,
+                        'data'=>"document deleted."
+                    )
+                );
+            }else{
+                http_response_code(400);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'data'=>"document not exists or permission denied."
+                    )
+                );
+            }
         }
     }
 ?>

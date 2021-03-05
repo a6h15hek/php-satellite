@@ -9,7 +9,8 @@
     include_once '../../../config/authentication.php';
 
     //check authentication
-    if(!checkAuth()){
+    $auth_data = checkAuth();
+    if(!$auth_data){
         print_r(json_encode(
             array(
                 'success'=>false,

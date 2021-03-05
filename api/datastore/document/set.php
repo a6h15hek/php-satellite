@@ -9,6 +9,10 @@
     ){
          // Creating a Collection Object
         $document = new Document($db);
+
+        //set user_id & role
+        $document->user_id = $auth_data->user_id;
+         $document->role = $auth_data->role;
         
         $collection_name = $data->collection_name;
         $document_name = $data->document_name;

@@ -83,7 +83,7 @@
                 );
             }else{
                 // No document
-                http_response_code(204);
+                http_response_code(404);
                 return json_encode(
                     array(
                         'success'=>false,
@@ -159,10 +159,10 @@
         }
 
         //create Collection
-        public function create($collection_name){
+        public function create($collection_name,$read="private",$write="private"){
             // Create query
-            $query = 'INSERT INTO ' . $this->table . ' (collection_name) 
-                     VALUES (:collection_name)';
+            $query = 'INSERT INTO ' . $this->table . ' (collection_name, read_per, write_per) 
+                     VALUES (:collection_name, :read_per, :write_per)';
             
             // Prepare statement
             $stmt = $this->conn->prepare($query);
@@ -172,6 +172,8 @@
 
             // Bind data
             $stmt->bindParam(':collection_name', $this->collection_name);
+            $stmt->bindParam(':read_per', $read);
+            $stmt->bindParam(':write_per', $write);
 
             try{
                 if($stmt->execute()) {

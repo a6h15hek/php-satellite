@@ -1,16 +1,30 @@
 <?php
-    include_once '../../../config/post_core.php';
-    include_once '../../../models/User.php';
+   require "../../../startenv.php";
+   // required headers
+   header("Access-Control-Allow-Origin: *");
+   header("Content-Type: application/json; charset=UTF-8");
+   header("Access-Control-Allow-Methods: POST");
+   header("Access-Control-Max-Age: 3600");
+   header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-    // instantiate product object
-    $user = new User($db);
+   //imports
+   include_once '../../../config/Database.php';
+   include_once '../../../models/User.php';
 
+   // Initialize database 
+   $database = new Database();
+   $db = $database->connect();
+
+   // Get raw posted data
+   $data = json_decode(file_get_contents("php://input"));
     // create the user
     if(
         !empty($data->firstname) &&
         !empty($data->email) &&
         !empty($data->password)
     ){
+         // instantiate product object
+         $user = new User($db);
          // set product property values
         $user->firstname = $data->firstname;
         $user->lastname = $data->lastname;

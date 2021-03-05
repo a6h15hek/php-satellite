@@ -23,13 +23,7 @@
             // decode jwt
             $decoded = JWT::decode($jwt_token, $_ENV['JWT_KEY'], array('HS256'));
 
-            //check the client id
-            if(!strcmp($decoded->data->client_id, $_ENV['CLIENT_ID'])){
-                // compare 
-                return true;
-            }else{
-                return false;
-            }
+            return $decoded->data;
         }catch (Exception $e){
             // set response code
             http_response_code(401);

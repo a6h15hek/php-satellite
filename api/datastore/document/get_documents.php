@@ -5,6 +5,9 @@
     // Creating a Collection Object
     $document = new Document($db); 
 
+    $document->user_id = $auth_data->user_id;
+    $document->role = $auth_data->role;
+    
     //Get collection Id
     if(isset($_GET['collection'])){
         $collection_name =   $_GET['collection'] ;

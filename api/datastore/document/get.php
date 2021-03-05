@@ -2,11 +2,17 @@
     include_once '../../../config/get_core.php';
     include_once '../../../models/Document.php';
 
-    // Creating a Collection Object
-    $document = new Document($db); 
+     
 
     //Get collection Id
     if(isset($_GET['collection']) && isset($_GET['document'])){
+        // Creating a Collection Object
+        $document = new Document($db);
+
+         //set user_id & role
+         $document->user_id = $auth_data->user_id;
+         $document->role = $auth_data->role;
+        
         $collection_name =   $_GET['collection'] ;
         $document_name =   $_GET['document'] ;
         //Getting collection

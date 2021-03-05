@@ -9,8 +9,11 @@
     ){
         $document = new Document($db);
 
+        //set user_id & role
+        $document->user_id = $auth_data->user_id;
+         $document->role = $auth_data->role;
+
         // Get raw posted data
-        
         $collection_name = $data->collection_name;
         $data_object = $data->data_object;
         $result = $document->add($collection_name,$data_object);
