@@ -89,7 +89,7 @@ class Client{
             "iss" =>  $_ENV['JWT_ISSUER'],
             "data" => array(
                     "user_id" => $this->client_id,
-                    "role" => "user" 
+                    "role" => "client" 
                 )
             );
         

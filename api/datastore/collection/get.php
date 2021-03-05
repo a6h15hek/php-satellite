@@ -3,7 +3,7 @@
     include_once '../../../config/get_core.php';
     include_once '../../../models/Collection.php';
 
-    if(!strcmp($auth_data->role, 'user')){
+    if(strcmp($auth_data->role, 'admin')){
         return print_r(json_encode(
             array(
                 'success'=>false,
