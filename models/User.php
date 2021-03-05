@@ -146,7 +146,6 @@ class User{
             "iss" =>  $_ENV['JWT_ISSUER'],
             "data" => array(
                     "user_id" => $this->user_id,
-                    "email" => $this->email,
                     "role" => $this->role
                 )
             );

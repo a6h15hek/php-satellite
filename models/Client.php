@@ -88,8 +88,8 @@ class Client{
             "iat" => time(),
             "iss" =>  $_ENV['JWT_ISSUER'],
             "data" => array(
-                    "client_id" => $this->client_id,
-                    "app_name" => $this->app_name
+                    "user_id" => $this->client_id,
+                    "role" => "user" 
                 )
             );
         
