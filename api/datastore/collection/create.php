@@ -9,7 +9,17 @@
         $collection = new Collection($db);
 
         $collection_name = $data->collection_name;
-        $result = $collection->create($collection_name);
+        
+        //check input variable
+        if(isset($data->read) && isset($data->write)){
+            $result = $collection->create($collection_name, $data->read, $data->write);
+        } else if(isset($data->read)){
+            $result = $collection->create($collection_name, $data->read, "private");
+        } else if(isset($data->write)){
+            $result = $collection->create($collection_name, "private", $data->write);
+        }else{
+            $result = $collection->create($collection_name);
+        }
         print_r($result);
     }else{
          // set response code

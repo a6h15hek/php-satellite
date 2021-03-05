@@ -250,6 +250,68 @@
             }            
         }
 
+        public function updatepermissions($collection_name, $read=NULL, $write=NULL){
+
+            if(isset($read) && isset($write)){
+                // Create query
+                $query = 'UPDATE ' . $this->table . '
+                    SET read_per = :read_per , write_per = :write_per
+                    WHERE collection_name = :collection_name ';
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':read_per',$read);
+                $stmt->bindParam(':write_per',$write);
+            } else if(isset($read)){
+                 // Create query
+                 $query = 'UPDATE ' . $this->table . '
+                    SET read_per = :read_per 
+                    WHERE collection_name = :collection_name ';
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':read_per',$read);
+
+            } else if(isset($write)){
+                 // Create query
+                 $query = 'UPDATE ' . $this->table . '
+                    SET write_per = :write_per
+                    WHERE collection_name = :collection_name ';
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':write_per',$write);
+            }
+            
+            // Bind data
+            $stmt->bindParam(':collection_name', $collection_name);
+
+            try{
+                if($stmt->execute()) {
+                    http_response_code(200);
+                    return json_encode(
+                        array(
+                            'success'=>true,
+                            'message' => 'Collection permission Updated'
+                        )
+                    );
+                }else{
+                    http_response_code(500);
+                    return json_encode(
+                        array(
+                            'success'=>false,
+                            'message' => $stmt->error
+                        )
+                    );
+                }
+            }catch (Exception $e){
+                http_response_code(500);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => $e->getMessage()
+                    )
+                );
+            }            
+        }
+
         //delete collection ;
         public function delete($collection_name){
             // Create query

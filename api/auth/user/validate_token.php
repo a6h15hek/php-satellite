@@ -2,14 +2,6 @@
     include_once '../../../config/get_core.php';
     include_once '../../../config/authentication.php';
 
-    if(strcmp($auth_data->role, 'client')){
-        return print_r(json_encode(
-            array(
-                'success'=>false,
-                'message' => "Only client can validate token."
-            )
-        ));
-    }
     //get authorization token
     $headers = apache_request_headers();
     if(isset($headers['Authorization'])){
