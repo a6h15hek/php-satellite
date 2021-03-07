@@ -334,7 +334,7 @@
                 return json_encode(
                     array(
                         'success'=>true,
-                        'message' => "Document set Successfully."
+                        'message' => "Document successfully written!"
                     )
                 );
             
@@ -355,7 +355,7 @@
         public function updatearray($collection_name, $document_name, $arrayfield, $arrayelement, $action="add"){
             try {
                 $this->conn->beginTransaction();
-                $query1 = 'SELECT id FROM collections WHERE collection_name=:collection_name';
+                $query1 = 'SELECT id,write_per FROM collections WHERE collection_name=:collection_name';
                  //preparing statement
                 $stmt = $this->conn->prepare($query1);
                  // Bind ID
@@ -572,7 +572,7 @@
                     extract($row);
                     $document_item = array(
                         'dataObject' => json_decode($data_object),
-                        'document' => $document_name,
+                        'document_name' => $document_name,
                         'updatedAt' => $updated_at,
                         'createdAt' => $created_at              
                     );
@@ -585,7 +585,6 @@
                 return json_encode(
                     array(
                         'success'=>true,
-                        'collection'=> $collection_name,
                         'documents'=>$document_array
                     )
                 );
