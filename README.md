@@ -18,7 +18,7 @@ Satellite Backend App is an open source backend that can be deployed to any infr
 
 ### Installation
 
-- Step 1 : Put all the files in public_html or htdocs folder.
+- Step 1 : Put all the files in public_html or htdocs folder of your hosting.
 - Step 2 : Import the database schema into mysql phpmyadmin. Database Schema is in **database_shema/v2**.
 - Step 3 : Add your database and jwt credentials into .env file.
   
@@ -35,7 +35,7 @@ JWT_ISSUER="url-of-jwt-token-issuing-website"
 ```
 Options -Indexes
 ```
-It disables the directory access.
+It disables the directory browsing.
 
 **Generating Client Secret Key**
 - Step 1 : Generate Client Id & Password.
