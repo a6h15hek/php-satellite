@@ -31,17 +31,17 @@ class Client{
         $this->client_id = uniqid("CLI",false) . $this->generateRandomString(5);
         $password_hash = password_hash($password, PASSWORD_BCRYPT);
         http_response_code(200);
-        return print_r(json_encode(
+        return json_encode(
             array(
                 'success'=>true,
-                'message' => "Client Created.",
-                'password' => $password_hash,
-                'credentials' => array(
+                'message' => "Id & password Generated. Insert generated credentials to client table in mysql database.",
+                'password' => $password,
+                'generated-credentials' => array(
                     'client_id' => $this->client_id,
-                    'password' => $password
+                    'password' => $password_hash
                 )
             )
-        ));
+        );
     }
     // check if given email exist in the database
     public function check_app_exists(){
@@ -96,21 +96,21 @@ class Client{
             // generate jwt
             $jwt = JWT::encode($token, $_ENV['JWT_KEY']);
             http_response_code(200);
-            return print_r(json_encode(
+            return json_encode(
                 array(
                     'success'=>true,
                     'message' => "Copy this token & use as SECRET_KEY in client application.",
                     'token' => $jwt
                 )
-            ));
+            );
         }else{
             http_response_code(401);
-            return print_r(json_encode(
+            return json_encode(
                 array(
                     'success'=>false,
                     'message' => "Incorrect Id or password."
                 )
-            ));
+            );
         }
     }
     
