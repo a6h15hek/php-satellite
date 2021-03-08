@@ -3,6 +3,15 @@
     include_once '../../../config/authentication.php';
     include_once '../../../models/User.php';
 
+    
+    if(!strcmp($auth_data->role, 'client')){
+        return print_r(json_encode(
+            array(
+                'success'=>false,
+                'message' => "Only client can check for valid token."
+            )
+        ));
+    }
     //get authorization token
     $headers = apache_request_headers();
     if(isset($headers['Authorization'])){

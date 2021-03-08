@@ -20,6 +20,7 @@
         exit();
     }
 
+
     // Initialize database 
     $database = new Database();
     $db = $database->connect();  
