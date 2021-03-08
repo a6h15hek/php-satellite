@@ -1,6 +1,7 @@
 <?php
     include_once '../../../config/get_core.php';
     include_once '../../../config/authentication.php';
+    include_once '../../../models/User.php';
 
     //get authorization token
     $headers = apache_request_headers();
@@ -8,7 +9,8 @@
         $temp_array = explode(" ",$headers['Authorization']);
         $jwt_token = $temp_array[1];
 
-        $result = validate_token($jwt_token);
+        $user = new User($db);
+        $result = $user->validate_token($jwt_token);
         if($result){
             http_response_code(200);
             return print_r(json_encode(

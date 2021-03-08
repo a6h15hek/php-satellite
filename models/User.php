@@ -16,6 +16,7 @@ class User{
     public $role;
     public $password;
     public $user_id;
+    private $login_token;
  
     // constructor
     public function __construct($db){
@@ -43,7 +44,8 @@ class User{
                         firstname = :firstname,
                         lastname = :lastname,
                         email = :email,
-                        password = :password";
+                        password = :password,
+                        login_token = :login_token";
 
             // prepare the query
             $stmt = $this->conn->prepare($query);
@@ -62,6 +64,10 @@ class User{
             $stmt->bindParam(':firstname', $this->firstname);
             $stmt->bindParam(':lastname', $this->lastname);
             $stmt->bindParam(':email', $this->email);
+
+            //login token for security
+            $this->login_token = $this->generateRandomString(7);
+            $stmt->bindParam(':login_token', $this->login_token);
 
             // hash the password before saving to database
             $password_hash = password_hash($this->password, PASSWORD_BCRYPT);
@@ -100,7 +106,7 @@ class User{
     // check if given email exist in the database
     public function emailExists(){
         // query to check if email exists
-        $query = "SELECT user_id, role ,password
+        $query = "SELECT user_id, role, login_token, password
                 FROM " . $this->table_name . "
                 WHERE email = ?
                 LIMIT 0,1";
@@ -122,8 +128,7 @@ class User{
             // assign values to object properties
             $this->user_id = $row['user_id'];
             $this->role = $row['role'];
-            // $this->firstname = $row['firstname'];
-            // $this->lastname = $row['lastname'];
+            $this->login_token = $row['login_token'];
             $this->password = $row['password'];
             // return true because email exists in the database
             return true;
@@ -144,6 +149,7 @@ class User{
             $token = array(
             "iat" => time(),
             "iss" =>  $_ENV['JWT_ISSUER'],
+            "login_token" => $this->login_token,
             "data" => array(
                     "user_id" => $this->user_id,
                     "role" => $this->role
@@ -171,34 +177,78 @@ class User{
         }
     }
 
+    private function get_login_token(){
+        $query = "SELECT login_token
+                FROM " . $this->table_name . "
+                WHERE user_id = ?
+                LIMIT 0,1";
+        // prepare the query
+        $stmt = $this->conn->prepare( $query );
+        $stmt->bindParam(1, $this->user_id); 
+        $stmt->execute();
+
+        $this->login_token = $stmt->fetchColumn();
+        return $this->login_token ;
+    }
+
+
     //delete user
     public function validate_token($jwt_token){
         // if decode succeed, show user details
         try {
             // decode jwt
-            $decoded = JWT::decode($jwt_token,$_ENV['JWT_KEY'], array('HS256'));
-    
-            // set response code
-            http_response_code(200);
-    
-            // show user details
-            return json_encode(array(
-                "success" => true,
-                "message" => "Access granted.",
-                "data" => $decoded->data
-            ));
-    
+            $decoded = JWT::decode($jwt_token, $_ENV['JWT_KEY'], array('HS256'));
+            $this->user_id = $decoded->data->user_id;
+
+            if(!strcmp($decoded->login_token, $this->get_login_token())){
+                return $decoded->data;
+            }else{
+                return false;
+            }
         }catch (Exception $e){
- 
             // set response code
             http_response_code(401);
-         
-            // tell the user access denied  & show error message
-            return json_encode(array(
-                "success" => false,
-                "message" => "Access denied.",
-                "error" => $e->getMessage()
-            ));
+            return false;
         }
-    }    
+    }  
+
+    public function logout(){
+        try{
+            $query = 'UPDATE users
+                      SET login_token = :login_token 
+                      WHERE user_id = :user_id ';
+            // prepare the query
+            $stmt = $this->conn->prepare( $query );
+
+            $this->login_token = htmlspecialchars(strip_tags($this->generateRandomString(7)));
+            $stmt->bindParam(':login_token', $this->login_token); 
+            $stmt->bindParam(':user_id', $this->user_id); 
+
+            if($stmt->execute()){
+                http_response_code(200);
+                return json_encode(
+                    array(
+                        'success'=>true,
+                        'message' => "logout successful."
+                    )
+                );
+            }
+
+            http_response_code(500);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => "Unable to logout."
+                )
+            );
+        }catch(PDOException $e){
+            http_response_code(500);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => $e->getMessage()
+                )
+            );
+        }
+    }
 }
