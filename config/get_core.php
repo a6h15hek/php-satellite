@@ -1,8 +1,6 @@
 <?php 
     require "../../../startenv.php";
-    // Headers
-    header('Access-Control-Allow-Origin: *');
-    header('Content-Type: application/json');
+    include_once "headers.php";
 
     //imports
     include_once '../../../config/Database.php';
@@ -11,6 +9,7 @@
     //check authentication
     $auth_data = checkAuth();
     if(!$auth_data){
+        http_response_code(401);
         print_r(json_encode(
             array(
                 'success'=>false,

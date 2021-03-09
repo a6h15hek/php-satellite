@@ -2,11 +2,11 @@
    include_once '../../../config/post_core.php';
    include_once '../../../models/User.php';
    
-   if(!strcmp($auth_data->role, 'client')){
+   if(strcmp($auth_data->role, 'client') && strcmp($auth_data->role, 'admin')){
         return print_r(json_encode(
             array(
                 'success'=>false,
-                'message' => "Only client can create users."
+                'message' => "Only client or admin can create users."
             )
         ));
     }

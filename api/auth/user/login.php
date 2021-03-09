@@ -1,15 +1,7 @@
 <?php
-    include_once '../../../config/post_core.php';
+    include_once '../../../config/post_core_not_auth.php';
     include_once '../../../models/User.php';
-
-    if(!strcmp($auth_data->role, 'client')){
-        return print_r(json_encode(
-            array(
-                'success'=>false,
-                'message' => "Only client can request to login user."
-            )
-        ));
-    }
+    
     if(
         !empty($data->email) &&
         !empty($data->password)
