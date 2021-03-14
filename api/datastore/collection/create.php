@@ -2,6 +2,15 @@
     include_once '../../../config/post_core.php';
     include_once '../../../models/Collection.php';
 
+    if(strcmp($auth_data->role, 'admin')){
+        return print_r(json_encode(
+            array(
+                'success'=>false,
+                'message' => "You need admin level permissions."
+            )
+        ));
+    }
+    
     if(
         !empty($data->collection_name)
     ){

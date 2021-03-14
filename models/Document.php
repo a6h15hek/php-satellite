@@ -523,7 +523,7 @@
                 // Bind ID
                 $stmt->bindParam(':collection_name', $collection_name);
                 $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
-                $stmt->bindValue(':end', (int) trim($end), PDO::PARAM_INT);
+                $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
             }else{
                 $query = 'SELECT doc.updated_at, doc.created_at, doc.document_name, col.collection_name, doc.data_object
                       FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
@@ -537,7 +537,7 @@
                 $stmt->bindParam(':collection_name', $collection_name);
                 $stmt->bindParam(':user_id', $this->user_id);
                 $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
-                $stmt->bindValue(':end', (int) trim($end), PDO::PARAM_INT);
+                $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
             }
 
             
@@ -664,6 +664,69 @@
                     array(
                         'success'=>false,
                         'data'=>"document not exists or permission denied."
+                    )
+                );
+            }
+        }
+
+        public function getDocNames($collection_name,$start=0,$end=10){
+            $query = 'SELECT doc.document_name
+                      FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
+                      WHERE col.collection_name = :collection_name LIMIT :start , :end ';
+                      //preparing statement
+                $stmt = $this->conn->prepare($query);
+                // Bind ID
+                $stmt->bindParam(':collection_name', $collection_name);
+                $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
+                $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
+
+             // executing and checking
+            try{
+                if(!$stmt->execute()){
+                    http_response_code(500);
+                    return json_encode(
+                        array(
+                            'success'=>false,
+                            'message' => $stmt->error
+                        )
+                    );
+                }
+            }catch (Exception $e){
+                http_response_code(500);
+                    return json_encode(
+                        array(
+                            'success'=>false,
+                            'message' => $e->getMessage()
+                        )
+                    );
+            }
+            
+            $row_count = $stmt->rowCount();
+
+            if($row_count > 0){
+                $document_array = array();
+
+                while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    extract($row);
+                    
+                    // Push to "data"
+                    array_push($document_array, $document_name);
+                }
+                // return to json
+                http_response_code(200);
+                return json_encode(
+                    array(
+                        'success'=>true,
+                        'documents'=>$document_array
+                    )
+                );
+            }else{
+                // No document
+                http_response_code(404);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => 'Collection not found.'
                     )
                 );
             }

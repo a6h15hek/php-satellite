@@ -13,7 +13,16 @@
     }
     // Creating a Collection Object
     $collection = new Collection($db);
+
+    if(isset($_GET['start']) && isset($_GET['end'])){
+        $results = $collection->get_collections($_GET['start'],$_GET['end']);
+    } else if(isset($_GET['start'])){
+        $results = $collection->get_collections($start=$_GET['start']);
+    } else if(isset($_GET['end'])){
+        $results = $collection->get_collections(0,$_GET['end']);
+    }else{
+        $results = $collection->get_collections();
+    }
     
-    $result = $collection->get_collections();
-    print_r($result);
+    print_r($results);
 ?>

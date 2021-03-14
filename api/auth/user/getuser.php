@@ -5,7 +5,7 @@
     // instantiate product object
     $user = new User($db);
     $user->user_id = $auth_data->user_id;
-    $result = $user->logout();
+    $result = $user->getUser();
     print_r($result);
 
 ?>

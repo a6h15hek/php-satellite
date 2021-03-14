@@ -11,7 +11,7 @@
 
         //set user_id & role
         $document->user_id = $auth_data->user_id;
-         $document->role = $auth_data->role;
+        $document->role = $auth_data->role;
 
         // Get raw posted data
         $collection_name = $data->collection_name;

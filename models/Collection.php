@@ -23,21 +23,33 @@
         private $new_collection_name;
         private $created_at;
 
+        private $read_per;
+        private $write_per;
+        private $total_collections;
+
         public function __construct($db){
             $this->conn = $db;
         }
 
         //Get all collections
-        public function get_collections(){
+        public function get_collections($start=0,$end=10){
+            $query = "SELECT COUNT(*) FROM " . $this->table ;
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+
+            //getting total users
+            $this->total_collections =$stmt->fetchColumn();
+
             // Creating query
             $query ='SELECT 
-                        collection_name,
-                        created_at
-                    FROM '. $this->table ;
+                        collection_name, created_at, read_per, write_per
+                    FROM '. $this->table .' LIMIT :start , :end ' ;
             
             //preparing statement
             $stmt = $this->conn->prepare($query);
              // executing and checking
+            $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
+            $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
             try{
                 if(!$stmt->execute()){
                     http_response_code(500);
@@ -67,6 +79,8 @@
                     extract($row);
                     $collection_item = array(
                         'collectionName' => $collection_name,
+                        'read' => $read_per,
+                        'write' => $write_per,
                         'createdAt' => $created_at              
                     );
             
@@ -78,6 +92,7 @@
                 return json_encode(
                     array(
                         'success'=>true,
+                        'total_collections' => (int)$this->total_collections,
                         'data'=>$collection_array
                     )
                 );
@@ -331,22 +346,43 @@
             $stmt->bindParam(':collection_name', $collection_name);
 
             try{
-                if($stmt->execute()) {
+                if(!$stmt->execute()) {
                     http_response_code(200);
                     return json_encode(
                         array(
                             'success'=>true,
-                            'message' => 'Collection deleted and related documents deleted.'
-                        )
-                    );
-                }else{
-                    return json_encode(
-                        array(
-                            'success'=>false,
                             'message' => $stmt->error
                         )
                     );
                 }
+
+            $row_count = $stmt->rowCount();
+            if($row_count > 0){
+                http_response_code(200);
+                return json_encode(
+                    array(
+                        'success'=>true,
+                        'data'=>"Collection & its document deleted."
+                    )
+                );
+            }else{
+                if($this->deleteOnlyCollection($collection_name)){
+                    http_response_code(200);
+                    return json_encode(
+                        array(
+                            'success'=>true,
+                            'message'=>"Collection deleted."
+                        )
+                    );
+                }
+                http_response_code(400);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message'=>"Collection not exists or permission denied."
+                    )
+                );
+            }
             }catch (Exception $e){
                 http_response_code(500);
                 return json_encode(
@@ -356,6 +392,29 @@
                     )
                 );
             }            
+        }
+
+        private function deleteOnlyCollection($collection_name){
+            $query = 'DELETE FROM ' . $this->table . '
+                      WHERE collection_name = :collection_name ';
+            // Prepare statement
+            $stmt = $this->conn->prepare($query);
+            // Bind data
+            $stmt->bindParam(':collection_name', $collection_name);
+            try{
+                if(!$stmt->execute()) {
+                    return false;
+                }
+
+                $row_count = $stmt->rowCount();
+                if($row_count > 0){
+                    return true;
+                }else{
+                    return false;
+                }
+            }catch (Exception $e){
+                return false;
+            } 
         }
     }
 ?>
