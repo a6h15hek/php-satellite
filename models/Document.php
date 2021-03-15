@@ -32,6 +32,8 @@
          public $created_at;
          public $start;
          public $end;
+
+         private $total_documents;
  
          public function __construct($db){
              $this->conn = $db;
@@ -99,6 +101,7 @@
                 return json_encode(
                     array(
                         'success'=>true,
+                        'message'=>"Data Object fetched.",
                         'data'=>$document_obj
                     )
                 );
@@ -655,7 +658,7 @@
                 return json_encode(
                     array(
                         'success'=>true,
-                        'data'=>"document deleted."
+                        'message'=>"document deleted."
                     )
                 );
             }else{
@@ -670,18 +673,32 @@
         }
 
         public function getDocNames($collection_name,$start=0,$end=10){
-            $query = 'SELECT doc.document_name
-                      FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
-                      WHERE col.collection_name = :collection_name LIMIT :start , :end ';
-                      //preparing statement
+            try{
+                $query = 'SELECT COUNT(*)
+                        FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
+                        WHERE col.collection_name = :collection_name ';
                 $stmt = $this->conn->prepare($query);
-                // Bind ID
+                $stmt->bindParam(':collection_name', $collection_name);
+                $stmt->execute();
+
+                //getting total users
+                $this->total_documents =$stmt->fetchColumn();
+
+
+                $query = 'SELECT doc.document_name
+                        FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
+                        WHERE col.collection_name = :collection_name 
+                        ORDER BY doc.updated_at DESC
+                        LIMIT :start , :end ';
+                        //preparing statement
+                $stmt = $this->conn->prepare($query);
+                    // Bind ID
                 $stmt->bindParam(':collection_name', $collection_name);
                 $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
                 $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
 
              // executing and checking
-            try{
+            
                 if(!$stmt->execute()){
                     http_response_code(500);
                     return json_encode(
@@ -717,7 +734,8 @@
                 return json_encode(
                     array(
                         'success'=>true,
-                        'documents'=>$document_array
+                        'total_documents'=>$this->total_documents,
+                        'data'=>$document_array
                     )
                 );
             }else{
@@ -726,7 +744,7 @@
                 return json_encode(
                     array(
                         'success'=>false,
-                        'message' => 'Collection not found.'
+                        'message' => 'Empty Collection.'
                     )
                 );
             }

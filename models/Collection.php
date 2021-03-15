@@ -33,24 +33,25 @@
 
         //Get all collections
         public function get_collections($start=0,$end=10){
-            $query = "SELECT COUNT(*) FROM " . $this->table ;
-            $stmt = $this->conn->prepare($query);
-            $stmt->execute();
-
-            //getting total users
-            $this->total_collections =$stmt->fetchColumn();
-
-            // Creating query
-            $query ='SELECT 
-                        collection_name, created_at, read_per, write_per
-                    FROM '. $this->table .' LIMIT :start , :end ' ;
-            
-            //preparing statement
-            $stmt = $this->conn->prepare($query);
-             // executing and checking
-            $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
-            $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
             try{
+                $query = "SELECT COUNT(*) FROM " . $this->table ;
+                $stmt = $this->conn->prepare($query);
+                $stmt->execute();
+
+                //getting total users
+                $this->total_collections =$stmt->fetchColumn();
+
+                // Creating query
+                $query ='SELECT 
+                            collection_name, created_at, read_per, write_per
+                        FROM '. $this->table .' LIMIT :start , :end ' ;
+                
+                //preparing statement
+                $stmt = $this->conn->prepare($query);
+                // executing and checking
+                $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
+                $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
+            
                 if(!$stmt->execute()){
                     http_response_code(500);
                     return json_encode(
