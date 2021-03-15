@@ -168,6 +168,7 @@ class User{
                 array(
                     'success'=>true,
                     'message' => "Login successfully.",
+                    'role' => $this->role, 
                     'token' => $jwt
                 )
             );

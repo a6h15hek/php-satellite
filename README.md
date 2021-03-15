@@ -38,55 +38,7 @@ Options -Indexes
 It disables the directory browsing.
 
 **Generating Client Secret Key**
-- Step 1 : Generate Client Id & Password.
-```
-+ POST /api/auth/client/generatecredential.php
-Accept: application/json
-Content-Type: application/json
-
-{
-    "password": "1234567" 
-}
-```
-
-*Successful Response:*
-```
-{
-    "success": true,
-    "message": "Id & password Generated. Insert generated credentials to client table in mysql database.",
-    "password": "1234567",
-    "generated-credentials": {
-        "client_id": "<generated-client-id>",
-        "password": "<hashed-password>"
-    }
-}
-```
-- Step 2 : Add Client Id, Password & AppName in client table in mysql database manually.
-```
-INSERT INTO `client` (`id`, `app_name`, `client_id`, `password`) VALUES (NULL, 'my_new_app', '<generated-client-id>', '<generated-hashed-password>');
-```
-- Step 3 : Generate Secret key
-using the client id and password.
-```
-+ POST /api/auth/client/getsecretkey.php
-Accept: application/json
-Content-Type: application/json
-
-{
-    "client_id": "<generated-client-id>",
-    "password": "1234567"
-}
-```
-
-*Successful Response:*
-```
-{
-    "success": true,
-    "message": "Copy this token & use as SECRET_KEY in client application.",
-    "token": "<Client-Secret-Key>"
-}
-```
-Now you can use this secret key as authorization header to get access to sattelite API's. Store secret key in .env file for frontend application.
+empty
 
 ## Using Cloud Datastore
 Cloud Datastore is a cloud-hosted, NoSQL database that your iOS, Android, and web apps can access directly. Cloud datastore's NoSQL data model, you store data in documents that contain fields mapping to values. These documents are stored in collections, which are containers for your documents that you can use to organize your data and build queries. Documents support many different data types, from simple strings and numbers, to complex, nested objects. You can also create subcollections within documents and build hierarchical data structures that scale as your database grows.  
