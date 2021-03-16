@@ -2,14 +2,7 @@
    include_once '../../../config/post_core.php';
    include_once '../../../models/User.php';
    
-   if(strcmp($auth_data->role, 'admin')){
-        return print_r(json_encode(
-            array(
-                'success'=>false,
-                'message' => "Only admin can create users."
-            )
-        ));
-    }
+
     // create the user
     if(
         !empty($data->firstname) &&

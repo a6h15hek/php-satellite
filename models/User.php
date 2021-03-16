@@ -412,4 +412,63 @@ class User{
             );
         }            
     }
+
+    public function changepassword($new_password){
+        try{
+            $query = 'SELECT password
+                        FROM ' . $this->table_name . ' WHERE user_id = :user_id ';
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':user_id', $this->user_id);
+            $stmt->execute();
+            $password =$stmt->fetchColumn();
+            
+            //echo $password;
+            if(password_verify($this->password, $password)){
+                $query = 'UPDATE users
+                      SET password = :password 
+                      WHERE user_id = :user_id ';
+                // prepare the query
+                $stmt = $this->conn->prepare( $query );
+
+                $password_hash = password_hash($new_password, PASSWORD_BCRYPT);
+                $stmt->bindParam(':password', $password_hash);
+                $stmt->bindParam(':user_id', $this->user_id); 
+
+                if($stmt->execute()){
+                    return json_encode(
+                        array(
+                            'success'=>true,
+                            'message' => "password changed"
+                        )
+                    );
+                }
+
+                http_response_code(500);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => "Unable to logout."
+                    )
+                );
+            }else{
+                http_response_code(401);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => "Password not correct."
+                    )
+                );
+            }
+            
+        }catch(PDOException $e){
+            http_response_code(500);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => $e->getMessage()
+                )
+            );
+        }
+    }
+
 }

@@ -94,9 +94,33 @@ Content-Type: application/json
 
 ### Getting Access to everything 
 You need to change the role from "user" to "admin" manually into user table in mysql database. Admin role gives superuser ability to user. Useful for administrator of website.
+Default Admin Credentials.
 ```
-UPDATE `users` SET `role` = 'admin' WHERE `users`.`user_id` = <your-user-id>;
-``` 
+"email" : "admin@email.com",
+"password":"admin"
+```
+
+**Change Password**
+Change admin password to strong password. use the admin login token as header in authorization to change password.
+```
++ POST /api/auth/user/changepassword.php
+Accept: application/json
+Content-Type: application/json
+
+{
+    "password" : "admin2",
+    "new_password" : "admin"
+}
+```
+
+*Successful Response:*
+```
+{
+    "success": true,
+    "message": "password changed."
+}
+```
+
 
 **Generating Client Secret Key**
 Only use admin account.
