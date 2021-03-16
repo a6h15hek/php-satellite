@@ -1,5 +1,4 @@
 <?php 
-    require "../../../startenv.php";
     include_once "headers.php";
 
     //imports
@@ -17,6 +16,19 @@
             )
         ));
         exit();
+    }
+
+    if(!strcmp($auth_data->role, "user") || !strcmp($auth_data->role, "client")){
+        if(strcmp($origin, $_ENV['ALLOW_ORIGIN']) && strcmp($_ENV['ALLOW_ORIGIN'], "*")){
+            http_response_code(401);
+            print_r(json_encode(
+                array(
+                    'success'=>false,
+                    'message' => "Access Denied. set ALLOW_ORIGIN = <your-client-address> in .env file"
+                )
+            ));
+            exit();   
+        }
     }
 
 

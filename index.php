@@ -4,6 +4,7 @@
     
     require "startenv.php";
     require_once realpath(__DIR__ . "/vendor/autoload.php");
+    include_once "./config/headers.php";
     //imports
     use Dotenv\Dotenv;
 

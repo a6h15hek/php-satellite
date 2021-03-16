@@ -30,15 +30,130 @@ DB_USERNAME="username"
 DB_PASSWORD="password"
 JWT_KEY="a-32-character-string"
 JWT_ISSUER="url-of-jwt-token-issuing-website"
+ALLOW_ORIGIN=<client-url>
+ALLOW_API_TESTING=False
+ALLOW_DIRECT_URL_ACCESS=False
 ```
+To test the api using POSTMAN or Isomania set 'ALLOW_API_TESTING=True' in .env file.
+Set ALLOW_ORIGIN=* to allow access to all urls.
+
 - Step 4 : Add this to the .htaccess file in directory. (optional)
 ```
 Options -Indexes
 ```
 It disables the directory browsing.
 
+
+## Using Authentication
+You can use Satellite Authentication to let your users authenticate using their email addresses and passwords, and to manage your app's password-based accounts.
+
+### Create Account with "user" role
+```
++ POST /api/auth/user/create_user.php
+Accept: application/json
+Content-Type: application/json
+
+{
+    "firstname":"Abhsihek",
+    "lastname":"Yadav",
+    "email" : "a6h15hek@outlook.com",
+    "password":"mypass123"
+}
+```
+
+*Successful Response:*
+```
+{
+    "success": true,
+    "message": "User Created."
+}
+```
+
+### Sign in a user with an email address and password
+```
++ POST /api/auth/user/login.php
+Accept: application/json
+Content-Type: application/json
+
+{
+    "firstname":"Abhsihek",
+    "lastname":"Yadav",
+    "email" : "a6h15hek@outlook.com",
+    "password":"mypass123"
+}
+```
+
+*Successful Response:*
+```
+{
+    "success": true,
+    "message": "Login successfully.",
+    "token": "<user-login-token>"
+}
+```
+
+### Getting Access to everything 
+You need to change the role from "user" to "admin" manually into user table in mysql database. Admin role gives superuser ability to user. Useful for administrator of website.
+```
+UPDATE `users` SET `role` = 'admin' WHERE `users`.`user_id` = <your-user-id>;
+``` 
+
 **Generating Client Secret Key**
-empty
+Only use admin account.
+- Step 1 : Create client.
+```
++ POST /api/auth/client/createclient.php
+Accept: application/json
+Content-Type: application/json
+{
+    "app_name" : "mynewapp2"
+}
+```
+
+*Successful Response:*
+```
+{
+    "success": true,
+    "message": "Client Created."
+}
+```
+- Step 2 : Generate Secret key.
+```
++ POST /api/auth/client/getsecretkey.php
+Accept: application/json
+Content-Type: application/json
+{
+    "client_id": "CLI604f4d152c404KCspc"
+}
+```
+
+*Successful Response:*
+```
+{
+    "success": true,
+    "message": "Copy this token & use as SECRET_KEY in client application.",
+    "token": "<Client-Secret-Key>"
+}
+```
+Now you can use this secret key as authorization header to get access to sattelite API's. Store secret key in .env file for frontend application.
+
+**Delete Client**
+```
++ POST /api/auth/client/deleteclient.php
+Accept: application/json
+Content-Type: application/json
+{
+    "client_id": "CLI604f4d152c404KCspc"
+}
+```
+
+*Successful Response:*
+```
+{
+    "success": true,
+    "message": "Client deleted.",
+}
+```
 
 ## Using Cloud Datastore
 Cloud Datastore is a cloud-hosted, NoSQL database that your iOS, Android, and web apps can access directly. Cloud datastore's NoSQL data model, you store data in documents that contain fields mapping to values. These documents are stored in collections, which are containers for your documents that you can use to organize your data and build queries. Documents support many different data types, from simple strings and numbers, to complex, nested objects. You can also create subcollections within documents and build hierarchical data structures that scale as your database grows.  
@@ -226,53 +341,6 @@ Content-Type: application/json
 {
     "success": true,
     "data": "Document deleted."
-}
-```
-## Using Authentication
-You can use Satellite Authentication to let your users authenticate using their email addresses and passwords, and to manage your app's password-based accounts.
-
-### Create Account with "user" role
-```
-+ POST /api/auth/user/create_user.php
-Accept: application/json
-Content-Type: application/json
-
-{
-    "firstname":"Abhsihek",
-    "lastname":"Yadav",
-    "email" : "a6h15hek@outlook.com",
-    "password":"mypass123"
-}
-```
-
-*Successful Response:*
-```
-{
-    "success": true,
-    "message": "User Created."
-}
-```
-
-### Sign in a user with an email address and password
-```
-+ POST /api/auth/user/login.php
-Accept: application/json
-Content-Type: application/json
-
-{
-    "firstname":"Abhsihek",
-    "lastname":"Yadav",
-    "email" : "a6h15hek@outlook.com",
-    "password":"mypass123"
-}
-```
-
-*Successful Response:*
-```
-{
-    "success": true,
-    "message": "Login successfully.",
-    "token": "<user-login-token>"
 }
 ```
 

@@ -13,6 +13,8 @@ class Client{
     public $app_name;
     public $client_id;
     public $token;
+    private $session_token;
+    public $access_origin;
  
     // constructor
     public function __construct($db){
@@ -27,26 +29,62 @@ class Client{
         }
         return $randomString;
     }
-    public function generate_client_id_password($password){
-        $this->client_id = uniqid("CLI",false) . $this->generateRandomString(5);
-        $password_hash = password_hash($password, PASSWORD_BCRYPT);
-        http_response_code(200);
-        return json_encode(
-            array(
-                'success'=>true,
-                'message' => "Id & password Generated. Insert generated credentials to client table in mysql database.",
-                'password' => $password,
-                'generated-credentials' => array(
-                    'client_id' => $this->client_id,
-                    'password' => $password_hash
+    public function createClient(){
+        try{
+            // insert query
+            $query = "INSERT INTO " . $this->table_name . "
+                    SET
+                        app_name = :app_name,
+                        client_id = :client_id,
+                        session_token = :session_token ";
+
+            // prepare the query
+            $stmt = $this->conn->prepare($query);
+
+            //creating unique user id 
+            $this->client_id = uniqid("CLI",false) . $this->generateRandomString(5);
+            $stmt->bindParam(':client_id', $this->client_id);
+
+            // bind the values
+            $stmt->bindParam(':app_name', $this->app_name);
+
+            //login token for security
+            $this->session_token = htmlspecialchars(strip_tags($this->generateRandomString(7)));
+            $stmt->bindParam(':session_token', $this->session_token);
+
+            // execute the query, also check if query was successful
+            if($stmt->execute()){
+                http_response_code(200);
+                return json_encode(
+                    array(
+                        'success'=>true,
+                        'message' => "Client Created."
+                    )
+                );
+            }
+
+            http_response_code(500);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => "Unable to create client."
                 )
-            )
-        );
+            );
+        }catch (PDOException $e){
+            http_response_code(500);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => $e->getMessage()
+                )
+            );
+        }
     }
+    
     // check if given email exist in the database
     public function check_app_exists(){
         // query to check if email exists
-        $query = "SELECT app_name, password
+        $query = "SELECT app_name
                 FROM " . $this->table_name . "
                 WHERE client_id = ?
                 LIMIT 0,1";
@@ -67,7 +105,6 @@ class Client{
     
             // assign values to object properties
             $this->app_name = $row['app_name'];
-            $this->password = $row['password'];
             // return true because email exists in the database
             return true;
         }
@@ -76,20 +113,20 @@ class Client{
     }
 
     //login user
-    public function get_secret_key($client_id, $password){
+    public function get_secret_key($client_id){
         // set product property values
         $this->client_id = $client_id;
         $app_exists = $this->check_app_exists();
 
         // check if email exists and if password is correct
-        if($app_exists && password_verify($password, $this->password)){
-        
+        if($app_exists){
+
             $token = array(
             "iat" => time(),
             "iss" =>  $_ENV['JWT_ISSUER'],
             "data" => array(
                     "user_id" => $this->client_id,
-                    "role" => "client" 
+                    "role" => "client"
                 )
             );
         
@@ -108,10 +145,113 @@ class Client{
             return json_encode(
                 array(
                     'success'=>false,
-                    'message' => "Incorrect Id or password."
+                    'message' => "App not exists."
                 )
             );
         }
     }
-    
+
+    //delete client
+    public function delete(){
+        // Create query
+        $query = "DELETE FROM " . $this->table_name . "
+                  WHERE client_id=:client_id ";
+
+        // Prepare statement
+        $stmt = $this->conn->prepare($query);
+
+        // Bind data
+        $stmt->bindParam(':client_id', $this->client_id);
+        try{
+            if($stmt->execute()) {
+                http_response_code(200);
+                return json_encode(
+                    array(
+                        'success'=>true,
+                        'message' => 'Client deleted.'
+                    )
+                );
+            }else{
+                http_response_code(500);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => $stmt->error
+                    )
+                );
+            }
+        }catch (Exception $e){
+            http_response_code(500);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => $e->getMessage()
+                )
+            );
+        }            
+    }
+    public function getClients(){
+        try{
+           // Creating query
+            $query ='SELECT  app_name, client_id
+                    FROM '. $this->table_name ;
+            
+            //preparing statement
+            $stmt = $this->conn->prepare($query);
+            // executing and checking
+        
+            if(!$stmt->execute()){
+                http_response_code(500);
+                return json_encode(
+                    array(
+                        'success'=>false,
+                        'message' => $stmt->error
+                    )
+                );
+            }
+        }catch (Exception $e){
+            http_response_code(500);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => $e->getMessage()
+                )
+            );
+        }
+        
+        $row_count = $stmt->rowCount();
+
+        if($row_count > 0){
+            $clients_array = array();
+
+            while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                extract($row);
+                $client = array(
+                    'app_name' => $app_name,
+                    'client_id' => $client_id          
+                );
+        
+                // Push to "data"
+                array_push($clients_array, $client);
+            }
+            // return to json
+            http_response_code(200);
+            return json_encode(
+                array(
+                    'success'=>true,
+                    'message' => "Client Fetched.",
+                    'data'=>$clients_array
+                )
+            );
+        }else{
+            // No document
+            http_response_code(404);
+            return json_encode(
+                array(
+                    'success'=>false,
+                    'message' => 'No Client'
+                )
+            );
+        }
+    }
 }

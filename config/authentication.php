@@ -22,7 +22,6 @@
         try {
             // decode jwt
             $decoded = JWT::decode($jwt_token, $_ENV['JWT_KEY'], array('HS256'));
-
             return $decoded->data;
         }catch (Exception $e){
             // set response code

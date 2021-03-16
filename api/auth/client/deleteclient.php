@@ -16,8 +16,8 @@
         // Creating a Collection Object
         $client = new Client($db);
 
-        $client_id = $data->client_id;
-        $result = $client->get_secret_key($client_id);
+        $client->client_id = $data->client_id;
+        $result = $client->delete();
         print_r($result);
     }else{
          // set response code

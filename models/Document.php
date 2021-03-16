@@ -597,7 +597,7 @@
                 return json_encode(
                     array(
                         'success'=>false,
-                        'message' => 'Collection not found.'
+                        'message' => 'Collection not found or access denied.'
                     )
                 );
             }
