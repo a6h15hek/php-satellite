@@ -249,7 +249,7 @@ class Client{
             return json_encode(
                 array(
                     'success'=>false,
-                    'message' => 'No Client'
+                    'message' => 'No Clients. Create one'
                 )
             );
         }

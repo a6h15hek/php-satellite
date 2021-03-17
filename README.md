@@ -431,4 +431,5 @@ Content-Type: application/json
 ```
 
 ## PHP Satellite Dashboard
-Coming soon...
+Use this Dashboard to manage the your server app.<br/>
+Git Repository : https://github.com/a6h15hek/satellite-dashboard
