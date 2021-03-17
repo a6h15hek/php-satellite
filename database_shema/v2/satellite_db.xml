@@ -5,7 +5,7 @@
 - https://www.phpmyadmin.net
 -
 - Host: localhost
-- Generation Time: Mar 09, 2021 at 02:40 AM
+- Generation Time: Mar 17, 2021 at 02:41 PM
 - Server version: 8.0.23
 - PHP Version: 8.0.2
 -->
@@ -21,9 +21,9 @@
                   `id` int NOT NULL AUTO_INCREMENT,
                   `app_name` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
                   `client_id` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-                  `password` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                  `session_token` varchar(20) NOT NULL,
                   PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
             </pma:table>
             <pma:table name="collections">
                 CREATE TABLE `collections` (
@@ -34,7 +34,7 @@
                   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                   PRIMARY KEY (`id`),
                   UNIQUE KEY `collection_name` (`collection_name`)
-                ) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                ) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
             </pma:table>
             <pma:table name="documents">
                 CREATE TABLE `documents` (
@@ -46,7 +46,7 @@
                   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                   PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                ) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
             </pma:table>
             <pma:table name="users">
                 CREATE TABLE `users` (
@@ -61,7 +61,7 @@
                   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
                   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                   PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+                ) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
             </pma:table>
         </pma:database>
     </pma:structure_schemas>
@@ -74,5 +74,17 @@
         <!-- Table collections -->
         <!-- Table documents -->
         <!-- Table users -->
+        <table name="users">
+            <column name="id">45</column>
+            <column name="user_id">U60503ad52daf81xjg1</column>
+            <column name="firstname">Admin</column>
+            <column name="lastname"></column>
+            <column name="email">admin@email.com</column>
+            <column name="password">$2y$10$TR8QxoZ/z/CApj1RrOMShOeDVFSaQXqJZoJuPrZuuGRf4P8eb.ULe</column>
+            <column name="role">admin</column>
+            <column name="login_token">FULoERu</column>
+            <column name="created_at">2021-03-16 10:27:57</column>
+            <column name="updated_at">2021-03-17 19:28:45</column>
+        </table>
     </database>
 </pma_xml_export>
