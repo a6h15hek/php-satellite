@@ -52,6 +52,17 @@
                 // Bind ID
                 $stmt->bindParam(':collection_name', $collection_name);
                 $stmt->bindParam(':document_name', $document_name);
+            }else if(!strcmp($this->role, "client")){
+                $query = 'SELECT doc.updated_at, doc.created_at , doc.data_object
+                      FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
+                      WHERE col.collection_name = :collection_name AND doc.document_name = :document_name 
+                      AND col.read_per = "public"
+                      LIMIT 0,1 ';
+                 //preparing statement
+                 $stmt = $this->conn->prepare($query);
+                 // Bind ID
+                 $stmt->bindParam(':collection_name', $collection_name);
+                 $stmt->bindParam(':document_name', $document_name);
             }else{
                 $query = 'SELECT doc.updated_at, doc.created_at , doc.data_object
                       FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
@@ -527,6 +538,21 @@
                 $stmt->bindParam(':collection_name', $collection_name);
                 $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
                 $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
+
+            }else if(!strcmp($this->role, "client")){
+                $query = 'SELECT doc.updated_at, doc.created_at, doc.document_name, col.collection_name, doc.data_object
+                      FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
+                      WHERE col.collection_name = :collection_name 
+                      AND col.read_per = "public"
+                      LIMIT :start , :end ';
+
+                //preparing statement
+                $stmt = $this->conn->prepare($query);
+                // Bind ID
+                $stmt->bindParam(':collection_name', $collection_name);
+                $stmt->bindValue(':start', (int) trim($start), PDO::PARAM_INT);
+                $stmt->bindValue(':end', (int) trim($end-$start), PDO::PARAM_INT);
+
             }else{
                 $query = 'SELECT doc.updated_at, doc.created_at, doc.document_name, col.collection_name, doc.data_object
                       FROM ' . $this->table . ' doc LEFT JOIN collections col ON doc.collection_id = col.id 
