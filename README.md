@@ -180,7 +180,7 @@ Content-Type: application/json
 ```
 
 ## Using Cloud Datastore
-Cloud Datastore is a cloud-hosted, NoSQL database that your iOS, Android, and web apps can access directly. Cloud datastore's NoSQL data model, you store data in documents that contain fields mapping to values. These documents are stored in collections, which are containers for your documents that you can use to organize your data and build queries. Documents support many different data types, from simple strings and numbers, to complex, nested objects. You can also create subcollections within documents and build hierarchical data structures that scale as your database grows.  
+Cloud Datastore is a cloud-hosted, NoSQL database that your iOS, Android, and web apps can access directly. Cloud datastore's NoSQL data model, you store data in documents that contain fields mapping to values. These documents are stored in collections, which are containers for your documents that you can use to organize your data. Documents support many different data types, from simple strings and numbers, to complex, nested objects. You can also create subcollections within documents and build hierarchical data structures that scale as your database grows.  
 
 ### Add Data
 Cloud Datastore stores data in Documents, which are stored in Collections. Cloud Firestore creates collections and documents implicitly the first time you add data to the document. You do not need to explicitly create collections or documents.
