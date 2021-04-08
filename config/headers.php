@@ -23,8 +23,10 @@
 
     if (array_key_exists('HTTP_ORIGIN', $_SERVER)) {
         $origin = $_SERVER['HTTP_ORIGIN'];
+        $server_name = $_SERVER['SERVER_NAME'];
     }else if (array_key_exists('HTTP_REFERER', $_SERVER)) {
         $origin = $_SERVER['HTTP_REFERER'];
+        $server_name = $_SERVER['SERVER_NAME'];
         if(!filter_var($_ENV['ALLOW_DIRECT_URL_ACCESS'], FILTER_VALIDATE_BOOLEAN)){
             http_response_code(401);
             print_r(json_encode(
@@ -37,6 +39,7 @@
         }
     } else {
         $origin = $_SERVER['REMOTE_ADDR'];
+        $server_name = $_SERVER['SERVER_NAME'];
         if(!filter_var($_ENV['ALLOW_API_TESTING'], FILTER_VALIDATE_BOOLEAN)){
             http_response_code(401);
             print_r(json_encode(
