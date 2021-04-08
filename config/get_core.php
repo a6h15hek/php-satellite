@@ -19,7 +19,7 @@
     }
 
     if(!strcmp($auth_data->role, "user") || !strcmp($auth_data->role, "client")){
-        if(strcmp($origin, $_ENV['ALLOW_ORIGIN']) && strcmp($_ENV['ALLOW_ORIGIN'], "*")){
+        if(strcmp($server_name, $_ENV['ALLOW_ORIGIN']) && strcmp($_ENV['ALLOW_ORIGIN'], "*")){
             http_response_code(401);
             print_r(json_encode(
                 array(
