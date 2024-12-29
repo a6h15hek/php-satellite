@@ -1,5 +1,5 @@
 # PHP Satellite Backend App
-Satellite Backend App is an open source backend that can be deployed to any infrastructure that can run PHP.
+Satellite Backend App is an open source Backend as a Service(Baas) that can be deployed to any infrastructure that can run PHP.
 
 ## Features
 - Error handling through PHP Exceptions
